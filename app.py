@@ -3,11 +3,15 @@ app.py
 ------
 Página inicial (Home) do Big Mac Index Dashboard.
 
+Fonte de dados: API do bigmacindex.com (https://bigmacindex.com/api),
+com fallback automático para um snapshot local caso a API key não esteja
+configurada ou o serviço esteja indisponível.
+
 Estrutura do projeto:
     app.py                  <- este arquivo (ponto de entrada do Streamlit)
     pages/                  <- páginas adicionais (multipage app)
-    src/                    <- lógica de dados, métricas, mapas e gráficos
-    data/                   <- dados brutos (JSON + CSV)
+    src/                    <- lógica de dados (API + fallback), métricas, mapas e gráficos
+    data/                   <- dados de fallback offline (JSON + CSV)
     assets/                 <- CSS customizado
     .streamlit/config.toml  <- tema visual
 
@@ -19,7 +23,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from src.data_loader import load_countries_df, load_meta, region_label_map
+from src.data_loader import get_data_source, load_countries_df, load_meta, region_label_map
 from src.metrics import summary_stats, add_valuation_column
 from src.maps import build_price_choropleth, build_diff_choropleth
 from src.styling import load_css, kpi_card, render_kpi_row
@@ -37,17 +41,28 @@ load_css()
 # Cabeçalho
 # --------------------------------------------------------------------------
 meta = load_meta()
+source = get_data_source()
 
 hero_html = (
     '<div class="hero-banner">'
     "<h1>🍔 Big Mac Index Dashboard</h1>"
     "<p>Paridade do poder de compra (PPP) e valorização cambial em "
     f"{meta['total_countries']} países, com base nos dados do "
-    "<b>The Economist Big Mac Index</b>. Última atualização dos dados: "
+    "<b>bigmacindex.com</b>. Última atualização dos dados: "
     f"{meta['data_date']}.</p>"
     "</div>"
 )
 st.markdown(hero_html, unsafe_allow_html=True)
+
+if source == "api":
+    st.success("🟢 Dados ao vivo via API (bigmacindex.com).", icon="🟢")
+else:
+    st.warning(
+        "🟡 Nenhuma API key configurada (ou a API está indisponível) — exibindo um "
+        "**snapshot offline** de referência. Veja no README como configurar `BIGMAC_API_KEY` "
+        "para habilitar os dados ao vivo.",
+        icon="🟡",
+    )
 
 # --------------------------------------------------------------------------
 # Dados
@@ -61,7 +76,7 @@ region_labels = region_label_map()
 # Indicadores (KPIs)
 # --------------------------------------------------------------------------
 cards = [
-    kpi_card("Países cobertos", str(stats["n_countries"]), help_text="Dataset oficial The Economist"),
+    kpi_card("Países cobertos", str(stats["n_countries"]), help_text="Fonte: bigmacindex.com API"),
     kpi_card("Preço médio global", f"US$ {stats['avg_price']:.2f}"),
     kpi_card(
         "Mais caro",
@@ -116,8 +131,8 @@ nav_cols2[0].page_link("pages/4_Calculadora_PPP.py", label="🧮 Calculadora de 
 
 footer_html = (
     '<div class="footer-note">'
-    "Dados: The Economist Big Mac Index (github.com/TheEconomist/big-mac-data) · "
-    "Layout de referência: bigmacindex.app · "
+    "Dados: bigmacindex.com API (bigmacindex.com/api) · "
+    "Fallback offline: The Economist Big Mac Index · "
     "Uso educacional — não constitui recomendação de investimento."
     "</div>"
 )

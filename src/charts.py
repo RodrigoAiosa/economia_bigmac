@@ -76,11 +76,11 @@ def historical_line_chart(hist_df: pd.DataFrame, countries: list[str]) -> go.Fig
     plot_df = hist_df[hist_df["name"].isin(countries)]
     fig = px.line(
         plot_df,
-        x="year",
+        x="date",
         y="price_usd",
         color="name",
         markers=True,
-        labels={"year": "Ano", "price_usd": "Preço (US$)", "name": "País"},
+        labels={"date": "Data", "price_usd": "Preço (US$)", "name": "País"},
     )
     fig.update_layout(
         margin=dict(l=10, r=10, t=30, b=10),
