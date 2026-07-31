@@ -55,7 +55,7 @@ hero_html = (
 st.markdown(hero_html, unsafe_allow_html=True)
 
 if source == "api":
-    st.success("🟢 Dados ao vivo via API (bigmacindex.com).", icon="🟢")
+    st.success("Dados ao vivo via API (bigmacindex.com).", icon="🟢")
 else:
     st.warning(
         "🟡 Nenhuma API key configurada (ou a API está indisponível) — exibindo um "
