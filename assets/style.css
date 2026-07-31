@@ -1,0 +1,154 @@
+/* ==========================================================================
+   style.css — Tema visual do Big Mac Index Dashboard
+   ========================================================================== */
+
+:root {
+    --bmi-yellow: #FFC72C;
+    --bmi-red: #DA291C;
+    --bmi-green: #2ecc71;
+    --bmi-dark: #1a1a1a;
+    --bmi-card-bg: #202124;
+    --bmi-text-light: #f5f5f5;
+    --bmi-text-muted: #a0a0a0;
+    --bmi-border: #33343a;
+}
+
+/* Fundo geral do app */
+.stApp {
+    background-color: var(--bmi-dark);
+}
+
+/* Título principal com destaque amarelo (cor do Big Mac) */
+h1 {
+    color: var(--bmi-yellow) !important;
+    font-weight: 800 !important;
+}
+
+h2, h3 {
+    color: var(--bmi-text-light) !important;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background-color: #17181a;
+    border-right: 1px solid var(--bmi-border);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Cartões de indicadores (KPIs)                                          */
+/* ---------------------------------------------------------------------- */
+.kpi-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.kpi-card {
+    flex: 1 1 200px;
+    background: linear-gradient(160deg, var(--bmi-card-bg) 0%, #26272b 100%);
+    border: 1px solid var(--bmi-border);
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--bmi-yellow);
+}
+
+.kpi-label {
+    font-size: 0.8rem;
+    color: var(--bmi-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.35rem;
+}
+
+.kpi-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--bmi-text-light);
+}
+
+.kpi-delta {
+    font-size: 0.85rem;
+    color: var(--bmi-yellow);
+    margin-top: 0.25rem;
+}
+
+.kpi-help {
+    font-size: 0.75rem;
+    color: var(--bmi-text-muted);
+    margin-top: 0.4rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Badges de valorização cambial                                          */
+/* ---------------------------------------------------------------------- */
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-overvalued {
+    background-color: rgba(218, 41, 28, 0.18);
+    color: #ff7a6f;
+    border: 1px solid rgba(218, 41, 28, 0.4);
+}
+
+.badge-undervalued {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #6ee89a;
+    border: 1px solid rgba(46, 204, 113, 0.4);
+}
+
+.badge-neutral {
+    background-color: rgba(255, 199, 44, 0.15);
+    color: var(--bmi-yellow);
+    border: 1px solid rgba(255, 199, 44, 0.4);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Cabeçalho / hero                                                       */
+/* ---------------------------------------------------------------------- */
+.hero-banner {
+    background: linear-gradient(120deg, #2b2200 0%, var(--bmi-dark) 60%);
+    border: 1px solid var(--bmi-border);
+    border-radius: 18px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.hero-banner h1 {
+    margin: 0;
+    font-size: 2.1rem;
+}
+
+.hero-banner p {
+    color: var(--bmi-text-muted);
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+}
+
+/* Rodapé */
+.footer-note {
+    text-align: center;
+    color: var(--bmi-text-muted);
+    font-size: 0.8rem;
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--bmi-border);
+}
+
+/* Ajustes de tabela (dataframe) */
+[data-testid="stDataFrame"] {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--bmi-border);
+}
