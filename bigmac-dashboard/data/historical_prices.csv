@@ -1,0 +1,241 @@
+year,code,name,region,price_usd
+2010,USA,United States,americas,3.34
+2011,USA,United States,americas,3.64
+2012,USA,United States,americas,3.81
+2013,USA,United States,americas,4.14
+2014,USA,United States,americas,4.29
+2015,USA,United States,americas,4.52
+2016,USA,United States,americas,4.39
+2017,USA,United States,americas,4.66
+2018,USA,United States,americas,4.65
+2019,USA,United States,americas,4.86
+2020,USA,United States,americas,5.12
+2021,USA,United States,americas,5.05
+2022,USA,United States,americas,5.26
+2023,USA,United States,americas,5.59
+2024,USA,United States,americas,5.68
+2025,USA,United States,americas,5.66
+2010,CHE,Switzerland,europe,5.02
+2011,CHE,Switzerland,europe,5.0
+2012,CHE,Switzerland,europe,5.59
+2013,CHE,Switzerland,europe,5.77
+2014,CHE,Switzerland,europe,5.83
+2015,CHE,Switzerland,europe,5.94
+2016,CHE,Switzerland,europe,6.55
+2017,CHE,Switzerland,europe,6.43
+2018,CHE,Switzerland,europe,6.49
+2019,CHE,Switzerland,europe,6.68
+2020,CHE,Switzerland,europe,7.29
+2021,CHE,Switzerland,europe,7.33
+2022,CHE,Switzerland,europe,7.64
+2023,CHE,Switzerland,europe,7.78
+2024,CHE,Switzerland,europe,7.84
+2025,CHE,Switzerland,europe,8.29
+2010,JPN,Japan,asia,2.09
+2011,JPN,Japan,asia,2.24
+2012,JPN,Japan,asia,2.29
+2013,JPN,Japan,asia,2.41
+2014,JPN,Japan,asia,2.43
+2015,JPN,Japan,asia,2.52
+2016,JPN,Japan,asia,2.46
+2017,JPN,Japan,asia,2.56
+2018,JPN,Japan,asia,2.64
+2019,JPN,Japan,asia,2.65
+2020,JPN,Japan,asia,2.75
+2021,JPN,Japan,asia,2.78
+2022,JPN,Japan,asia,2.88
+2023,JPN,Japan,asia,3.02
+2024,JPN,Japan,asia,3.02
+2025,JPN,Japan,asia,3.08
+2010,BRA,Brazil,americas,2.85
+2011,BRA,Brazil,americas,3.12
+2012,BRA,Brazil,americas,3.14
+2013,BRA,Brazil,americas,3.22
+2014,BRA,Brazil,americas,3.18
+2015,BRA,Brazil,americas,3.41
+2016,BRA,Brazil,americas,3.33
+2017,BRA,Brazil,americas,3.46
+2018,BRA,Brazil,americas,3.7
+2019,BRA,Brazil,americas,3.67
+2020,BRA,Brazil,americas,3.72
+2021,BRA,Brazil,americas,3.82
+2022,BRA,Brazil,americas,3.94
+2023,BRA,Brazil,americas,3.98
+2024,BRA,Brazil,americas,3.88
+2025,BRA,Brazil,americas,3.88
+2010,GBR,Britain,europe,3.86
+2011,GBR,Britain,europe,4.02
+2012,GBR,Britain,europe,4.41
+2013,GBR,Britain,europe,4.52
+2014,GBR,Britain,europe,4.45
+2015,GBR,Britain,europe,4.7
+2016,GBR,Britain,europe,4.72
+2017,GBR,Britain,europe,5.03
+2018,GBR,Britain,europe,4.97
+2019,GBR,Britain,europe,5.0
+2020,GBR,Britain,europe,5.1
+2021,GBR,Britain,europe,5.34
+2022,GBR,Britain,europe,5.31
+2023,GBR,Britain,europe,5.56
+2024,GBR,Britain,europe,5.8
+2025,GBR,Britain,europe,5.68
+2010,CHN,China,asia,2.63
+2011,CHN,China,asia,2.63
+2012,CHN,China,asia,2.62
+2013,CHN,China,asia,2.68
+2014,CHN,China,asia,2.76
+2015,CHN,China,asia,2.95
+2016,CHN,China,asia,3.05
+2017,CHN,China,asia,3.03
+2018,CHN,China,asia,3.0
+2019,CHN,China,asia,3.14
+2020,CHN,China,asia,3.36
+2021,CHN,China,asia,3.3
+2022,CHN,China,asia,3.47
+2023,CHN,China,asia,3.5
+2024,CHN,China,asia,3.33
+2025,CHN,China,asia,3.58
+2010,ARG,Argentina,americas,4.12
+2011,ARG,Argentina,americas,4.31
+2012,ARG,Argentina,americas,4.67
+2013,ARG,Argentina,americas,4.68
+2014,ARG,Argentina,americas,5.01
+2015,ARG,Argentina,americas,5.21
+2016,ARG,Argentina,americas,5.61
+2017,ARG,Argentina,americas,5.76
+2018,ARG,Argentina,americas,5.66
+2019,ARG,Argentina,americas,5.95
+2020,ARG,Argentina,americas,5.97
+2021,ARG,Argentina,americas,6.5
+2022,ARG,Argentina,americas,6.65
+2023,ARG,Argentina,americas,6.52
+2024,ARG,Argentina,americas,6.87
+2025,ARG,Argentina,americas,7.01
+2010,TWN,Taiwan,asia,1.8
+2011,TWN,Taiwan,asia,1.83
+2012,TWN,Taiwan,asia,1.92
+2013,TWN,Taiwan,asia,1.93
+2014,TWN,Taiwan,asia,1.89
+2015,TWN,Taiwan,asia,1.98
+2016,TWN,Taiwan,asia,1.97
+2017,TWN,Taiwan,asia,2.16
+2018,TWN,Taiwan,asia,2.19
+2019,TWN,Taiwan,asia,2.22
+2020,TWN,Taiwan,asia,2.17
+2021,TWN,Taiwan,asia,2.16
+2022,TWN,Taiwan,asia,2.35
+2023,TWN,Taiwan,asia,2.4
+2024,TWN,Taiwan,asia,2.27
+2025,TWN,Taiwan,asia,2.38
+2010,EUZ,Euro area,europe,4.69
+2011,EUZ,Euro area,europe,4.83
+2012,EUZ,Euro area,europe,4.7
+2013,EUZ,Euro area,europe,4.93
+2014,EUZ,Euro area,europe,5.06
+2015,EUZ,Euro area,europe,5.03
+2016,EUZ,Euro area,europe,5.37
+2017,EUZ,Euro area,europe,5.27
+2018,EUZ,Euro area,europe,5.27
+2019,EUZ,Euro area,europe,5.49
+2020,EUZ,Euro area,europe,5.66
+2021,EUZ,Euro area,europe,5.5
+2022,EUZ,Euro area,europe,5.63
+2023,EUZ,Euro area,europe,6.03
+2024,EUZ,Euro area,europe,5.95
+2025,EUZ,Euro area,europe,5.92
+2010,MEX,Mexico,americas,2.81
+2011,MEX,Mexico,americas,3.0
+2012,MEX,Mexico,americas,3.17
+2013,MEX,Mexico,americas,3.36
+2014,MEX,Mexico,americas,3.38
+2015,MEX,Mexico,americas,3.49
+2016,MEX,Mexico,americas,3.55
+2017,MEX,Mexico,americas,3.83
+2018,MEX,Mexico,americas,3.81
+2019,MEX,Mexico,americas,4.13
+2020,MEX,Mexico,americas,4.22
+2021,MEX,Mexico,americas,4.06
+2022,MEX,Mexico,americas,4.22
+2023,MEX,Mexico,americas,4.47
+2024,MEX,Mexico,americas,4.4
+2025,MEX,Mexico,americas,4.47
+2010,KOR,South Korea,asia,2.08
+2011,KOR,South Korea,asia,2.24
+2012,KOR,South Korea,asia,2.44
+2013,KOR,South Korea,asia,2.58
+2014,KOR,South Korea,asia,2.58
+2015,KOR,South Korea,asia,2.68
+2016,KOR,South Korea,asia,2.87
+2017,KOR,South Korea,asia,2.98
+2018,KOR,South Korea,asia,3.1
+2019,KOR,South Korea,asia,3.28
+2020,KOR,South Korea,asia,3.37
+2021,KOR,South Korea,asia,3.56
+2022,KOR,South Korea,asia,3.42
+2023,KOR,South Korea,asia,3.61
+2024,KOR,South Korea,asia,3.69
+2025,KOR,South Korea,asia,3.95
+2010,AUS,Australia,oceania,3.36
+2011,AUS,Australia,oceania,3.58
+2012,AUS,Australia,oceania,3.68
+2013,AUS,Australia,oceania,3.74
+2014,AUS,Australia,oceania,3.83
+2015,AUS,Australia,oceania,4.14
+2016,AUS,Australia,oceania,4.08
+2017,AUS,Australia,oceania,4.31
+2018,AUS,Australia,oceania,4.3
+2019,AUS,Australia,oceania,4.21
+2020,AUS,Australia,oceania,4.63
+2021,AUS,Australia,oceania,4.66
+2022,AUS,Australia,oceania,4.8
+2023,AUS,Australia,oceania,4.87
+2024,AUS,Australia,oceania,4.92
+2025,AUS,Australia,oceania,4.74
+2010,IND,India,asia,1.63
+2011,IND,India,asia,1.75
+2012,IND,India,asia,1.78
+2013,IND,India,asia,1.89
+2014,IND,India,asia,2.06
+2015,IND,India,asia,2.01
+2016,IND,India,asia,2.15
+2017,IND,India,asia,2.16
+2018,IND,India,asia,2.21
+2019,IND,India,asia,2.37
+2020,IND,India,asia,2.43
+2021,IND,India,asia,2.41
+2022,IND,India,asia,2.5
+2023,IND,India,asia,2.44
+2024,IND,India,asia,2.52
+2025,IND,India,asia,2.72
+2010,ZAF,South Africa,africa,1.71
+2011,ZAF,South Africa,africa,1.85
+2012,ZAF,South Africa,africa,1.83
+2013,ZAF,South Africa,africa,1.99
+2014,ZAF,South Africa,africa,2.06
+2015,ZAF,South Africa,africa,2.19
+2016,ZAF,South Africa,africa,2.14
+2017,ZAF,South Africa,africa,2.35
+2018,ZAF,South Africa,africa,2.26
+2019,ZAF,South Africa,africa,2.34
+2020,ZAF,South Africa,africa,2.48
+2021,ZAF,South Africa,africa,2.56
+2022,ZAF,South Africa,africa,2.54
+2023,ZAF,South Africa,africa,2.57
+2024,ZAF,South Africa,africa,2.8
+2025,ZAF,South Africa,africa,2.72
+2010,CAN,Canada,americas,3.35
+2011,CAN,Canada,americas,3.51
+2012,CAN,Canada,americas,3.72
+2013,CAN,Canada,americas,3.86
+2014,CAN,Canada,americas,4.14
+2015,CAN,Canada,americas,4.05
+2016,CAN,Canada,americas,4.36
+2017,CAN,Canada,americas,4.33
+2018,CAN,Canada,americas,4.52
+2019,CAN,Canada,americas,4.75
+2020,CAN,Canada,americas,4.74
+2021,CAN,Canada,americas,4.87
+2022,CAN,Canada,americas,5.17
+2023,CAN,Canada,americas,5.01
+2024,CAN,Canada,americas,5.29
+2025,CAN,Canada,americas,5.65
