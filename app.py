@@ -27,6 +27,7 @@ from src.data_loader import get_data_source, load_countries_df, load_meta, regio
 from src.metrics import summary_stats, add_valuation_column
 from src.maps import build_price_choropleth, build_diff_choropleth
 from src.styling import load_css, kpi_card, render_kpi_row
+from esconder_selo import esconder_selo_streamlit
 
 st.set_page_config(
     page_title="Big Mac Index Dashboard",
@@ -34,6 +35,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+esconder_selo_streamlit()  # oculta os controles do Streamlit Cloud
 
 load_css()
 

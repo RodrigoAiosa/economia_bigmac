@@ -6,8 +6,10 @@ import streamlit as st
 
 from src.data_loader import load_countries_df
 from src.styling import load_css
+from esconder_selo import esconder_selo_streamlit
 
 st.set_page_config(page_title="Calculadora PPP | Big Mac Index", page_icon="🧮", layout="wide")
+esconder_selo_streamlit()  # oculta os controles do Streamlit Cloud
 load_css()
 
 st.title("🧮 Calculadora de Paridade do Poder de Compra")
