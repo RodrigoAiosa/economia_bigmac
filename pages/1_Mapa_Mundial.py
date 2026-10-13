@@ -8,8 +8,10 @@ from src.data_loader import load_countries_df, region_label_map
 from src.maps import build_price_choropleth, build_diff_choropleth
 from src.metrics import add_valuation_column
 from src.styling import load_css
+from esconder_selo import esconder_selo_streamlit
 
 st.set_page_config(page_title="Mapa Mundial | Big Mac Index", page_icon="🗺️", layout="wide")
+esconder_selo_streamlit()  # oculta os controles do Streamlit Cloud
 load_css()
 
 st.title("🗺️ Mapa Mundial do Big Mac Index")

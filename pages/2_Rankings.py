@@ -8,8 +8,10 @@ from src.data_loader import load_countries_df, region_label_map
 from src.metrics import recompute_base_currency, add_valuation_column, top_n
 from src.charts import ranking_bar_chart, extremes_bar_chart, region_box_plot
 from src.styling import load_css
+from esconder_selo import esconder_selo_streamlit
 
 st.set_page_config(page_title="Rankings | Big Mac Index", page_icon="📊", layout="wide")
+esconder_selo_streamlit()  # oculta os controles do Streamlit Cloud
 load_css()
 
 st.title("📊 Rankings Completos do Big Mac Index")
