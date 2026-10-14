@@ -146,6 +146,14 @@ hr {
     color: #ffe08a;
 }
 
+.notice.live {
+    background: rgba(46,204,113,.10);
+    border-color: rgba(46,204,113,.35);
+    color: #b9f3cf;
+}
+
+.chip .x { margin-left: 6px; opacity: .7; }
+
 .info {
     padding: 14px 16px;
     border-radius: 10px;
@@ -531,10 +539,7 @@ code { background: #2a2b30; padding: 1px 6px; border-radius: 4px; font-size: .85
             <p id="hero-text"></p>
         </div>
 
-        <div class="notice">
-            🟡 Exibindo o <b>snapshot offline</b> de referência (The Economist Big Mac Index).
-            Esta versão web é estática e não usa a API key do bigmacindex.com.
-        </div>
+        <div class="notice" id="source-notice"></div>
 
         <div class="kpi-row" id="kpis"></div>
         <div class="metric-row" id="metrics"></div>
@@ -633,17 +638,31 @@ code { background: #2a2b30; padding: 1px 6px; border-radius: 4px; font-size: .85
     <!-- ===================== TENDÊNCIAS ===================== -->
     <section class="page" id="page-tendencias" hidden>
         <h1>📈 Tendências Históricas de Preços</h1>
-        <div class="notice">
-            🟡 Série histórica <b>ilustrativa</b> (preço anual em US$, 2010 em diante) incluída no projeto.
-        </div>
+        <div class="notice" id="hist-notice"></div>
 
         <div class="controls">
+            <div class="field" style="min-width:260px">
+                <label for="hist-add">Adicionar país à comparação</label>
+                <select id="hist-add"></select>
+            </div>
+            <div class="field" id="hist-days-wrap" hidden>
+                <label for="hist-days">Janela de tempo</label>
+                <select id="hist-days">
+                    <option value="30">30 dias</option>
+                    <option value="90">90 dias</option>
+                    <option value="180">180 dias</option>
+                    <option value="365" selected>365 dias</option>
+                </select>
+            </div>
+        </div>
+        <div class="controls">
             <div class="field grow">
-                <span class="field-label">Selecione os países para comparar</span>
+                <span class="field-label">Países selecionados (clique para remover)</span>
                 <div class="chips" id="hist-countries"></div>
             </div>
         </div>
 
+        <p class="caption" id="hist-status"></p>
         <div class="chart" id="hist-chart"></div>
 
         <hr>
@@ -696,11 +715,7 @@ code { background: #2a2b30; padding: 1px 6px; border-radius: 4px; font-size: .85
         </details>
     </section>
 
-    <div class="footer-note">
-        Dados: The Economist Big Mac Index (snapshot offline do projeto) ·
-        <a href="https://bigmacindex.com/api" target="_blank" rel="noopener">bigmacindex.com/api</a> ·
-        Uso educacional, não constitui recomendação de investimento.
-    </div>
+    <div class="footer-note" id="footer-note"></div>
 </main>
 
 <script>
@@ -857,40 +872,80 @@ function diffChoropleth(el, rows) {
    ====================================================================== */
 let META = null;
 let COUNTRIES = [];
-let HIST = [];
+let HIST = null;          // série offline (CSV), carregada sob demanda
+let SOURCE = "fallback";  // "api" (ao vivo) ou "fallback" (snapshot offline)
+let API_ERROR = "";
 
-async function loadData() {
-    const [cRes, hRes] = await Promise.all([
-        fetch("data/fallback_countries.json"),
-        fetch("data/fallback_historical_prices.csv")
-    ]);
-    if (!cRes.ok || !hRes.ok) throw new Error("Falha ao carregar os dados.");
-    const raw = await cRes.json();
-    META = raw.meta;
-    COUNTRIES = raw.countries.map(c => ({
+function normalizeCountries(list) {
+    return list.map(c => ({
         rank: c.rank,
         code: c.code,
+        iso2: c.iso2 || "",
         name: c.name,
         flag: c.flag,
         region: c.region,
         currency_code: c.currency.code,
         currency_symbol: c.currency.symbol,
-        local_price: c.local_price,
-        dollar_ex: c.dollar_ex,
-        price_usd: c.price_usd,
-        diff_percent: c.diff_percent
-    })).sort((a, b) => a.rank - b.rank);
+        local_price: Number(c.local_price),
+        dollar_ex: Number(c.dollar_ex),
+        price_usd: Number(c.price_usd),
+        diff_percent: Number(c.diff_percent)
+    })).filter(c => isFinite(c.price_usd) && isFinite(c.local_price)).sort((a, b) => a.rank - b.rank);
+}
 
-    const csv = (await hRes.text()).trim().split(/\r?\n/);
+async function fetchJson(url, timeoutMs = 15000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const res = await fetch(url, { signal: controller.signal });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+        return body;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+async function loadData() {
+    // 1) Dados ao vivo pela função /api/latest (a chave fica no servidor).
+    try {
+        const live = await fetchJson("api/latest");
+        const list = normalizeCountries(live.countries || []);
+        if (!list.length) throw new Error("lista vazia");
+        META = live.meta;
+        COUNTRIES = list;
+        SOURCE = "api";
+        return;
+    } catch (err) {
+        API_ERROR = err.name === "AbortError" ? "tempo esgotado" : err.message;
+    }
+
+    // 2) Fallback: snapshot offline incluído no projeto.
+    const raw = await fetchJson("data/fallback_countries.json");
+    META = raw.meta;
+    COUNTRIES = normalizeCountries(raw.countries);
+    SOURCE = "fallback";
+}
+
+async function loadFallbackHistory() {
+    if (HIST) return HIST;
+    const res = await fetch("data/fallback_historical_prices.csv");
+    if (!res.ok) throw new Error("Falha ao carregar a série histórica offline.");
+    const csv = (await res.text()).trim().split(/\r?\n/);
     const header = csv.shift().split(",");
     HIST = csv.map(line => {
         const v = line.split(",");
         const o = Object.fromEntries(header.map((h, i) => [h, v[i]]));
-        o.year = Number(o.year);
-        o.price_usd = Number(o.price_usd);
-        return o;
+        return { name: o.name, date: o.year, price_usd: Number(o.price_usd) };
     });
+    return HIST;
 }
+
+const fmtDate = iso => {
+    if (!iso) return "—";
+    const [y, m, d] = String(iso).slice(0, 10).split("-");
+    return d ? `${d}/${m}/${y}` : iso;
+};
 
 /* ======================================================================
    Navegação por hash
@@ -925,9 +980,20 @@ renderers.home = function () {
     const over = COUNTRIES.filter(c => c.diff_percent > 0).length;
     const under = COUNTRIES.filter(c => c.diff_percent < 0).length;
 
+    const sourceName = SOURCE === "api" ? "bigmacindex.com" : "The Economist Big Mac Index";
     $("hero-text").innerHTML =
         `Paridade do poder de compra (PPP) e valorização cambial em ${COUNTRIES.length} países, ` +
-        `com base nos dados do <b>The Economist Big Mac Index</b>. Data de referência dos dados: ${esc(META.data_date)}.`;
+        `com base nos dados do <b>${sourceName}</b>. Última atualização dos dados: ${esc(fmtDate(META.data_date))}.`;
+
+    const notice = $("source-notice");
+    if (SOURCE === "api") {
+        notice.classList.add("live");
+        notice.innerHTML = "🟢 Dados ao vivo via API (bigmacindex.com).";
+    } else {
+        notice.innerHTML =
+            "🟡 A API está indisponível no momento" + (API_ERROR ? ` (${esc(API_ERROR)})` : "") +
+            ", exibindo um <b>snapshot offline</b> de referência (The Economist Big Mac Index).";
+    }
 
     const card = (label, value, delta, help) =>
         `<div class="kpi-card"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div>` +
@@ -935,7 +1001,7 @@ renderers.home = function () {
         (help ? `<div class="kpi-help">${help}</div>` : "") + `</div>`;
 
     $("kpis").innerHTML = [
-        card("Países cobertos", COUNTRIES.length, null, "Fonte: The Economist Big Mac Index"),
+        card("Países cobertos", COUNTRIES.length, null, `Fonte: ${sourceName}`),
         card("Preço médio global", `US$ ${fmt(avg)}`),
         card("Mais caro", `${most.flag} ${esc(most.name)}`, `US$ ${fmt(most.price_usd)}`),
         card("Mais barato", `${cheap.flag} ${esc(cheap.name)}`, `US$ ${fmt(cheap.price_usd)}`),
@@ -1043,7 +1109,7 @@ renderers.mapa = function () {
    Página: Rankings
    ====================================================================== */
 renderers.rankings = function () {
-    let baseCode = "USA";
+    let baseCode = COUNTRIES.some(c => c.code === "USA") ? "USA" : COUNTRIES[0].code;
     let regionTab = "all";
     let data = [];
     const tableState = { key: "rank", asc: true };
@@ -1189,22 +1255,77 @@ renderers.rankings = function () {
    Página: Tendências
    ====================================================================== */
 renderers.tendencias = function () {
-    const names = [...new Set(HIST.map(h => h.name))].sort((a, b) => a.localeCompare(b, "en"));
+    const live = SOURCE === "api";
     const flagByName = Object.fromEntries(COUNTRIES.map(c => [c.name, c.flag]));
-    const selected = new Set(["United States", "Switzerland", "Japan", "Brazil"].filter(n => names.includes(n)));
-    if (!selected.size) names.slice(0, 4).forEach(n => selected.add(n));
+    const iso2ByName = Object.fromEntries(COUNTRIES.filter(c => c.iso2).map(c => [c.name, c.iso2]));
+    const cache = {};      // "iso2|days" -> [{date, price_usd}]
+    let names = [];
+    let selected = [];
+    let requestId = 0;
 
-    const chips = () => {
-        $("hist-countries").innerHTML = names.map(n =>
-            `<button class="chip" data-n="${esc(n)}" aria-pressed="${selected.has(n)}">${flagByName[n] || ""} ${esc(n)}</button>`
-        ).join("");
+    $("hist-days-wrap").hidden = !live;
+    const notice = $("hist-notice");
+    if (live) {
+        notice.classList.add("live");
+        notice.innerHTML = "🟢 Histórico diário ao vivo via <b>GET /history</b> da API do bigmacindex.com.";
+    } else {
+        notice.innerHTML = "🟡 API indisponível: exibindo a série histórica <b>ilustrativa</b> do projeto (preço anual em US$, de 2010 em diante).";
+    }
+
+    const fillAdd = () => {
+        const rest = names.filter(n => !selected.includes(n));
+        $("hist-add").innerHTML = `<option value="">${rest.length ? "Escolha um país…" : "Todos os países já foram adicionados"}</option>` +
+            rest.map(n => `<option value="${esc(n)}">${flagByName[n] || ""} ${esc(n)}</option>`).join("");
     };
 
-    const update = () => {
-        const chosen = names.filter(n => selected.has(n));
+    const chips = () => {
+        $("hist-countries").innerHTML = selected.length
+            ? selected.map(n => `<button class="chip" aria-pressed="true" data-n="${esc(n)}" title="Remover">${flagByName[n] || ""} ${esc(n)}<span class="x">✕</span></button>`).join("")
+            : `<span class="caption">Nenhum país selecionado.</span>`;
+        fillAdd();
+    };
+
+    async function seriesFor(name, days) {
+        if (!live) {
+            const hist = await loadFallbackHistory();
+            return hist.filter(h => h.name === name).sort((a, b) => Number(a.date) - Number(b.date));
+        }
+        const key = iso2ByName[name] + "|" + days;
+        if (!cache[key]) {
+            const body = await fetchJson(`api/history?country=${encodeURIComponent(iso2ByName[name])}&days=${days}`);
+            cache[key] = (body.data || []).map(d => ({ date: d.date, price_usd: d.usd_price }));
+        }
+        return cache[key];
+    }
+
+    async function update() {
+        const myId = ++requestId;
+        const chosen = selected.slice();
         if (!chosen.length) {
             Plotly.purge($("hist-chart"));
             $("hist-chart").innerHTML = `<div class="notice">Selecione ao menos um país para visualizar o gráfico.</div>`;
+            $("hist-table").innerHTML = "";
+            $("hist-status").textContent = "";
+            $("hist-csv").disabled = true;
+            return;
+        }
+
+        const days = Number($("hist-days").value);
+        $("hist-status").textContent = "Carregando séries…";
+        const results = await Promise.all(chosen.map(n =>
+            seriesFor(n, days).then(rows => ({ name: n, rows })).catch(err => ({ name: n, rows: [], error: err.message }))
+        ));
+        if (myId !== requestId) return; // uma atualização mais nova já começou
+
+        const failed = results.filter(r => r.error || !r.rows.length).map(r => r.name);
+        const ok = results.filter(r => r.rows.length);
+        $("hist-status").textContent = failed.length
+            ? `Sem dados para: ${failed.join(", ")}.`
+            : (live ? `Últimos ${days} dias.` : "");
+
+        if (!ok.length) {
+            Plotly.purge($("hist-chart"));
+            $("hist-chart").innerHTML = `<div class="notice">Não foi possível obter dados históricos para os países selecionados.</div>`;
             $("hist-table").innerHTML = "";
             $("hist-csv").disabled = true;
             return;
@@ -1212,48 +1333,69 @@ renderers.tendencias = function () {
         $("hist-csv").disabled = false;
         if (!$("hist-chart").classList.contains("js-plotly-plot")) $("hist-chart").innerHTML = "";
 
-        const traces = chosen.map(n => {
-            const rows = HIST.filter(h => h.name === n).sort((a, b) => a.year - b.year);
-            return {
-                type: "scatter", mode: "lines+markers", name: n,
-                x: rows.map(r => r.year), y: rows.map(r => r.price_usd),
-                hovertemplate: `<b>${esc(n)}</b><br>%{x}: US$ %{y:.2f}<extra></extra>`
-            };
-        });
-        Plotly.react($("hist-chart"), traces, baseLayout({
+        const many = live && days > 90;
+        Plotly.react($("hist-chart"), ok.map(r => ({
+            type: "scatter",
+            mode: many ? "lines" : "lines+markers",
+            name: r.name,
+            x: r.rows.map(p => p.date),
+            y: r.rows.map(p => p.price_usd),
+            hovertemplate: `<b>${esc(r.name)}</b><br>%{x}: US$ %{y:.2f}<extra></extra>`
+        })), baseLayout({
             height: isMobile() ? 380 : 480,
-            xaxis: { title: { text: "Ano" }, dtick: 1, gridcolor: "#2e2f34", automargin: true },
+            hovermode: "x unified",
+            xaxis: live
+                ? { title: { text: "Data" }, type: "date", gridcolor: "#2e2f34", automargin: true }
+                : { title: { text: "Ano" }, dtick: 1, gridcolor: "#2e2f34", automargin: true },
             yaxis: { title: { text: "Preço (US$)" }, gridcolor: "#2e2f34", automargin: true }
         }), PLOT_CONFIG);
 
-        const years = [...new Set(HIST.filter(h => selected.has(h.name)).map(h => h.year))].sort((a, b) => a - b);
-        const lookup = {};
-        HIST.forEach(h => { lookup[h.year + "|" + h.name] = h.price_usd; });
-        const rows = years.map(y => {
-            const o = { year: y };
-            chosen.forEach(n => { o[n] = lookup[y + "|" + n] ?? null; });
+        const keys = [...new Set(ok.flatMap(r => r.rows.map(p => String(p.date))))].sort();
+        const lookupMap = {};
+        ok.forEach(r => r.rows.forEach(p => { lookupMap[p.date + "|" + r.name] = p.price_usd; }));
+        const rows = keys.map(k => {
+            const o = { date: k };
+            ok.forEach(r => { o[r.name] = lookupMap[k + "|" + r.name] ?? null; });
             return o;
         });
-        const columns = [{ key: "year", label: "Ano", num: true }].concat(chosen.map(n => ({
-            key: n, label: n, num: true, render: r => (r[n] == null ? "—" : fmt(r[n]))
-        })));
-        renderTable($("hist-table"), columns, rows, { key: "year", asc: true });
+        const label = live ? "Data" : "Ano";
+        const columns = [{ key: "date", label, render: r => esc(live ? fmtDate(r.date) : r.date) }]
+            .concat(ok.map(r => ({ key: r.name, label: r.name, num: true, render: x => (x[r.name] == null ? "—" : fmt(x[r.name])) })));
+        renderTable($("hist-table"), columns, rows, { key: "date", asc: !live });
 
         $("hist-csv").onclick = () => downloadCSV("big_mac_index_historico.csv",
-            ["Ano", ...chosen], rows.map(r => [r.year, ...chosen.map(n => r[n] ?? "")]));
-    };
+            [label, ...ok.map(r => r.name)], rows.map(r => [r.date, ...ok.map(s => r[s.name] ?? "")]));
+    }
 
+    $("hist-add").addEventListener("change", e => {
+        const n = e.target.value;
+        if (n && !selected.includes(n)) { selected.push(n); chips(); update(); }
+    });
     $("hist-countries").addEventListener("click", e => {
         const b = e.target.closest("button");
         if (!b) return;
-        const n = b.dataset.n;
-        selected.has(n) ? selected.delete(n) : selected.add(n);
+        selected = selected.filter(n => n !== b.dataset.n);
         chips();
         update();
     });
+    $("hist-days").addEventListener("change", update);
 
-    chips();
-    update();
+    (async () => {
+        if (live) {
+            names = Object.keys(iso2ByName).sort((a, b) => a.localeCompare(b, "en"));
+        } else {
+            try {
+                names = [...new Set((await loadFallbackHistory()).map(h => h.name))].sort((a, b) => a.localeCompare(b, "en"));
+            } catch (err) {
+                $("hist-status").textContent = err.message;
+                return;
+            }
+        }
+        selected = ["United States", "Switzerland", "Japan", "Brazil"].filter(n => names.includes(n));
+        if (!selected.length) selected = names.slice(0, 4);
+        chips();
+        update();
+    })();
 };
 
 /* ======================================================================
@@ -1263,7 +1405,7 @@ renderers.calculadora = function () {
     const opts = COUNTRIES.map(c => `<option value="${c.code}">${c.flag} ${esc(c.name)} (${esc(c.currency_code)})</option>`).join("");
     $("calc-origin").innerHTML = opts;
     $("calc-dest").innerHTML = opts;
-    $("calc-origin").value = "USA";
+    $("calc-origin").value = COUNTRIES.some(c => c.code === "USA") ? "USA" : COUNTRIES[0].code;
     $("calc-dest").value = COUNTRIES.some(c => c.code === "JPN") ? "JPN" : COUNTRIES[0].code;
 
     const money = (sym, v) => `${esc(sym)} ${fmt(v)}`;
@@ -1325,6 +1467,10 @@ renderers.calculadora = function () {
         return;
     }
     $("loading").remove();
+    $("footer-note").innerHTML = (SOURCE === "api"
+        ? `Dados: <a href="https://bigmacindex.com/api" target="_blank" rel="noopener">bigmacindex.com API</a> (ao vivo) · `
+        : `Dados: The Economist Big Mac Index (snapshot offline) · <a href="https://bigmacindex.com/api" target="_blank" rel="noopener">bigmacindex.com/api</a> · `) +
+        "Uso educacional, não constitui recomendação de investimento.";
     window.addEventListener("hashchange", showPage);
     showPage();
 })();
