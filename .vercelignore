@@ -1,0 +1,7 @@
+*.py
+requirements.txt
+src/
+pages/
+tests/
+bigmac-dashboard/
+.streamlit/

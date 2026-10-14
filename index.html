@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Big Mac Index Dashboard</title>
+<meta name="description" content="Paridade do poder de compra (PPP) e valorização cambial pelo Big Mac Index: mapa mundial, rankings, tendências e calculadora.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍔</text></svg>">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root {
+    --yellow: #FFC72C;
+    --red: #DA291C;
+    --red-soft: #e74c3c;
+    --green: #2ecc71;
+    --bg: #1a1a1a;
+    --card: #202124;
+    --text: #f5f5f5;
+    --muted: #a0a0a0;
+    --border: #33343a;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Source Sans Pro", "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+a { color: var(--yellow); }
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 20px 24px 40px;
+}
+
+/* ---------- Navegação ---------- */
+.topnav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(23,24,26,.95);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+}
+
+.topnav-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.brand {
+    font-weight: 800;
+    color: var(--yellow);
+    white-space: nowrap;
+    padding: 14px 0;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.nav-links::-webkit-scrollbar { display: none; }
+
+.nav-links a {
+    padding: 15px 12px 13px;
+    color: var(--muted);
+    text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    font-size: .92rem;
+}
+
+.nav-links a:hover { color: var(--text); }
+
+.nav-links a.active {
+    color: var(--text);
+    border-bottom-color: var(--yellow);
+}
+
+.page[hidden] { display: none; }
+
+/* ---------- Títulos ---------- */
+h1 {
+    color: var(--yellow);
+    font-weight: 800;
+    font-size: 2rem;
+    line-height: 1.2;
+    margin: 12px 0 6px;
+}
+
+h2 {
+    font-size: 1.35rem;
+    margin: 0 0 12px;
+}
+
+.caption {
+    color: var(--muted);
+    font-size: .88rem;
+    margin: 0 0 16px;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 28px 0;
+}
+
+/* ---------- Hero ---------- */
+.hero-banner {
+    background: linear-gradient(120deg, #2b2200 0%, var(--bg) 60%);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.5rem 2rem;
+    margin: 12px 0 1.25rem;
+}
+
+.hero-banner h1 { margin: 0; font-size: 2.1rem; }
+
+.hero-banner p {
+    color: var(--muted);
+    margin: .5rem 0 0;
+    font-size: .95rem;
+}
+
+.notice {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: .9rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255,199,44,.10);
+    border: 1px solid rgba(255,199,44,.35);
+    color: #ffe08a;
+}
+
+.info {
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(52,152,219,.12);
+    border: 1px solid rgba(52,152,219,.35);
+    color: #cfe6f7;
+    margin: 18px 0;
+}
+
+/* ---------- KPIs ---------- */
+.kpi-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.kpi-card {
+    flex: 1 1 200px;
+    background: linear-gradient(160deg, var(--card) 0%, #26272b 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,.35);
+    transition: transform .15s ease, border-color .15s ease;
+    min-width: 0;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--yellow);
+}
+
+.kpi-label {
+    font-size: .78rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: .35rem;
+}
+
+.kpi-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.kpi-delta { font-size: .85rem; color: var(--yellow); margin-top: .25rem; }
+.kpi-help { font-size: .75rem; color: var(--muted); margin-top: .4rem; }
+
+.metric-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.metric .kpi-label { text-transform: none; letter-spacing: 0; font-size: .88rem; }
+.metric .kpi-value { font-size: 2rem; font-weight: 600; }
+
+/* ---------- Abas e controles ---------- */
+.tabs {
+    display: flex;
+    gap: 2px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+    overflow-x: auto;
+}
+
+.tab {
+    padding: 9px 14px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: .9rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--text); border-bottom-color: var(--red); }
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    align-items: flex-end;
+    margin-bottom: 18px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field.grow { flex: 1 1 280px; }
+
+.field > label, .field-label {
+    color: var(--muted);
+    font-size: .85rem;
+}
+
+select, input[type="number"] {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #26272b;
+    color: var(--text);
+    font: inherit;
+    outline: none;
+}
+
+select:focus, input:focus { border-color: var(--yellow); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #26272b;
+    color: var(--muted);
+    font: inherit;
+    font-size: .82rem;
+    cursor: pointer;
+}
+
+.chip:hover { color: var(--text); }
+
+.chip[aria-pressed="true"] {
+    background: rgba(255,199,44,.15);
+    border-color: rgba(255,199,44,.6);
+    color: var(--yellow);
+}
+
+.range-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 260px; }
+.range-values { color: var(--yellow); font-weight: 600; font-size: .9rem; }
+
+input[type="range"] {
+    width: 100%;
+    accent-color: var(--red);
+}
+
+.dual-range {
+    position: relative;
+    height: 22px;
+}
+
+.dual-range input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    pointer-events: none;
+    background: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.dual-range input::-webkit-slider-thumb {
+    pointer-events: auto;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--red);
+    border: 2px solid #fff;
+    cursor: pointer;
+}
+
+.dual-range input::-moz-range-thumb {
+    pointer-events: auto;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--red);
+    border: 2px solid #fff;
+    cursor: pointer;
+}
+
+.dual-range::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 9px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+}
+
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+
+.seg button {
+    padding: 8px 14px;
+    border: none;
+    background: #26272b;
+    color: var(--muted);
+    font: inherit;
+    font-size: .88rem;
+    cursor: pointer;
+}
+
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button.active { background: rgba(218,41,28,.22); color: var(--text); }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #26272b;
+    color: var(--text);
+    font: inherit;
+    font-size: .88rem;
+    cursor: pointer;
+}
+
+.btn:hover { border-color: var(--yellow); }
+
+.chart { width: 100%; min-height: 300px; }
+
+/* ---------- Tabelas ---------- */
+.table-wrap {
+    max-height: 520px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .86rem;
+}
+
+th, td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #2a2b30;
+    text-align: left;
+    white-space: nowrap;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    background: #222327;
+    color: var(--muted);
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+th:hover { color: var(--text); }
+th .arrow { color: var(--yellow); }
+
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+tbody tr:hover { background: rgba(255,255,255,.03); }
+
+.badge {
+    display: inline-block;
+    padding: .1rem .55rem;
+    border-radius: 999px;
+    font-size: .74rem;
+    font-weight: 600;
+}
+
+.badge-over { background: rgba(218,41,28,.18); color: #ff7a6f; border: 1px solid rgba(218,41,28,.4); }
+.badge-under { background: rgba(46,204,113,.15); color: #6ee89a; border: 1px solid rgba(46,204,113,.4); }
+.badge-neutral { background: rgba(255,199,44,.15); color: var(--yellow); border: 1px solid rgba(255,199,44,.4); }
+
+.pos { color: #ff7a6f; }
+.neg { color: #6ee89a; }
+
+/* ---------- Explore ---------- */
+.explore {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.explore a {
+    display: block;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--card);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.explore a:hover { border-color: var(--yellow); }
+.explore small { display: block; color: var(--muted); margin-top: 4px; }
+
+/* ---------- Calculadora ---------- */
+.calc-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
+    align-items: end;
+    margin-bottom: 16px;
+}
+
+.swap {
+    padding: 9px 12px;
+    font-size: 1.1rem;
+}
+
+.calc-amount { max-width: 360px; }
+
+.result-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+details {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    background: var(--card);
+}
+
+summary { cursor: pointer; font-weight: 600; }
+details ol { color: #d5d5d5; padding-left: 20px; }
+code { background: #2a2b30; padding: 1px 6px; border-radius: 4px; font-size: .85em; }
+
+.footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: .8rem;
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.loading {
+    padding: 60px 0;
+    text-align: center;
+    color: var(--muted);
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 900px) {
+    .explore { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+    .container { padding: 12px 16px 32px; }
+    .topnav-inner { padding: 0 16px; gap: 10px; }
+    .brand { font-size: .95rem; }
+    .hero-banner { padding: 1.1rem 1.2rem; }
+    .hero-banner h1, h1 { font-size: 1.55rem; }
+    .metric-row, .result-row { grid-template-columns: 1fr; }
+    .calc-grid { grid-template-columns: 1fr; }
+    .swap { justify-self: center; transform: rotate(90deg); }
+    .explore { grid-template-columns: 1fr; }
+    .range-wrap { min-width: 0; width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+    <div class="topnav-inner">
+        <div class="brand">🍔 Big Mac Index</div>
+        <div class="nav-links" id="nav">
+            <a href="#home" data-page="home">🏠 Início</a>
+            <a href="#mapa" data-page="mapa">🗺️ Mapa Mundial</a>
+            <a href="#rankings" data-page="rankings">📊 Rankings</a>
+            <a href="#tendencias" data-page="tendencias">📈 Tendências</a>
+            <a href="#calculadora" data-page="calculadora">🧮 Calculadora PPP</a>
+        </div>
+    </div>
+</nav>
+
+<main class="container">
+    <div class="loading" id="loading">Carregando dados…</div>
+
+    <!-- ===================== HOME ===================== -->
+    <section class="page" id="page-home" hidden>
+        <div class="hero-banner">
+            <h1>🍔 Big Mac Index Dashboard</h1>
+            <p id="hero-text"></p>
+        </div>
+
+        <div class="notice">
+            🟡 Exibindo o <b>snapshot offline</b> de referência (The Economist Big Mac Index).
+            Esta versão web é estática e não usa a API key do bigmacindex.com.
+        </div>
+
+        <div class="kpi-row" id="kpis"></div>
+        <div class="metric-row" id="metrics"></div>
+
+        <hr>
+        <h2>🌍 Mapa Mundial Interativo</h2>
+        <div class="tabs" id="home-map-tabs">
+            <button class="tab active" data-mode="price">💵 Preço em USD</button>
+            <button class="tab" data-mode="diff">📊 Variação % vs. base (USD)</button>
+        </div>
+        <div class="chart" id="home-map"></div>
+        <p class="caption" id="home-map-caption"></p>
+
+        <hr>
+        <h2>📑 Explore mais</h2>
+        <div class="explore">
+            <a href="#mapa">🗺️ Mapa Mundial detalhado<small>Filtros por região e faixa de preço</small></a>
+            <a href="#rankings">📊 Rankings completos<small>Qualquer país como moeda-base</small></a>
+            <a href="#tendencias">📈 Tendências históricas<small>Evolução de preços desde 2010</small></a>
+            <a href="#calculadora">🧮 Calculadora de PPP<small>Câmbio implícito pelo Big Mac</small></a>
+        </div>
+    </section>
+
+    <!-- ===================== MAPA ===================== -->
+    <section class="page" id="page-mapa" hidden>
+        <h1>🗺️ Mapa Mundial do Big Mac Index</h1>
+        <p class="caption">Filtre por região e faixa de preço para explorar o mapa interativo.</p>
+
+        <div class="controls">
+            <div class="field grow">
+                <span class="field-label">Região</span>
+                <div class="chips" id="map-regions"></div>
+            </div>
+        </div>
+        <div class="controls">
+            <div class="field range-wrap">
+                <span class="field-label">Faixa de preço (US$)</span>
+                <span class="range-values" id="map-range-label"></span>
+                <div class="dual-range">
+                    <input type="range" id="map-min" step="0.01" aria-label="Preço mínimo">
+                    <input type="range" id="map-max" step="0.01" aria-label="Preço máximo">
+                </div>
+            </div>
+            <div class="field">
+                <span class="field-label">Colorir mapa por</span>
+                <div class="seg" id="map-mode">
+                    <button class="active" data-mode="price">Preço (US$)</button>
+                    <button data-mode="diff">Variação % vs. base</button>
+                </div>
+            </div>
+        </div>
+
+        <p id="map-count"></p>
+        <div class="chart" id="map-chart"></div>
+
+        <hr>
+        <h2>Tabela de dados filtrados</h2>
+        <div class="table-wrap" id="map-table"></div>
+    </section>
+
+    <!-- ===================== RANKINGS ===================== -->
+    <section class="page" id="page-rankings" hidden>
+        <h1>📊 Rankings Completos do Big Mac Index</h1>
+
+        <div class="controls">
+            <div class="field" style="min-width:280px">
+                <label for="base-select">Comparar preços em relação a:</label>
+                <select id="base-select"></select>
+            </div>
+        </div>
+        <p class="caption" id="base-caption"></p>
+
+        <div class="tabs" id="rank-tabs"></div>
+        <div class="chart" id="rank-chart"></div>
+
+        <hr>
+        <h2>🔝 Mais caros vs. mais baratos</h2>
+        <div class="controls">
+            <div class="field range-wrap">
+                <span class="field-label">Quantidade em cada grupo: <span class="range-values" id="n-label">10</span></span>
+                <input type="range" id="n-slider" min="5" max="20" value="10">
+            </div>
+        </div>
+        <div class="chart" id="extremes-chart"></div>
+
+        <hr>
+        <h2>📦 Distribuição de preços por região</h2>
+        <div class="chart" id="box-chart"></div>
+
+        <hr>
+        <h2>📋 Tabela completa</h2>
+        <div class="table-wrap" id="rank-table"></div>
+        <button class="btn" id="rank-csv">⬇️ Baixar tabela em CSV</button>
+    </section>
+
+    <!-- ===================== TENDÊNCIAS ===================== -->
+    <section class="page" id="page-tendencias" hidden>
+        <h1>📈 Tendências Históricas de Preços</h1>
+        <div class="notice">
+            🟡 Série histórica <b>ilustrativa</b> (preço anual em US$, 2010 em diante) incluída no projeto.
+        </div>
+
+        <div class="controls">
+            <div class="field grow">
+                <span class="field-label">Selecione os países para comparar</span>
+                <div class="chips" id="hist-countries"></div>
+            </div>
+        </div>
+
+        <div class="chart" id="hist-chart"></div>
+
+        <hr>
+        <h2>Dados da série selecionada</h2>
+        <div class="table-wrap" id="hist-table"></div>
+        <button class="btn" id="hist-csv">⬇️ Baixar série em CSV</button>
+    </section>
+
+    <!-- ===================== CALCULADORA ===================== -->
+    <section class="page" id="page-calculadora" hidden>
+        <h1>🧮 Calculadora de Paridade do Poder de Compra</h1>
+        <p class="caption">
+            Converta um valor de um país para outro usando a taxa de câmbio implícita
+            pelo preço do Big Mac, e compare com a taxa de câmbio de mercado.
+        </p>
+
+        <div class="calc-grid">
+            <div class="field">
+                <label for="calc-origin">País de origem</label>
+                <select id="calc-origin"></select>
+            </div>
+            <button class="btn swap" id="calc-swap" title="Inverter países" aria-label="Inverter países">⇄</button>
+            <div class="field">
+                <label for="calc-dest">País de destino</label>
+                <select id="calc-dest"></select>
+            </div>
+        </div>
+
+        <div class="field calc-amount">
+            <label for="calc-amount" id="calc-amount-label">Valor a converter</label>
+            <input type="number" id="calc-amount" min="0" step="10" value="100">
+        </div>
+
+        <hr>
+        <div class="result-row" id="calc-results"></div>
+        <div class="info" id="calc-info"></div>
+
+        <details>
+            <summary>Como funciona esse cálculo?</summary>
+            <ol>
+                <li>Pegamos o preço local do Big Mac em cada país (na moeda local).</li>
+                <li>A <b>taxa implícita PPP</b> é <code>preço_destino / preço_origem</code>, ou seja,
+                    quantas unidades da moeda de destino comprariam o mesmo Big Mac que uma unidade
+                    da moeda de origem compra em seu próprio país.</li>
+                <li>Comparamos essa taxa implícita com a <b>taxa de câmbio de mercado</b> real entre as duas moedas.</li>
+                <li>A diferença percentual entre as duas taxas é uma estimativa de quanto uma moeda está
+                    super ou subvalorizada frente à outra, a essência da metodologia do Big Mac Index
+                    criada pela <i>The Economist</i>.</li>
+            </ol>
+        </details>
+    </section>
+
+    <div class="footer-note">
+        Dados: The Economist Big Mac Index (snapshot offline do projeto) ·
+        <a href="https://bigmacindex.com/api" target="_blank" rel="noopener">bigmacindex.com/api</a> ·
+        Uso educacional, não constitui recomendação de investimento.
+    </div>
+</main>
+
+<script>
+/* ======================================================================
+   Utilidades
+   ====================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = (v, d = 2) => Number(v).toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+const signed = (v, d = 1) => (v > 0 ? "+" : "") + fmt(v, d);
+
+const REGION_LABELS = {
+    "europe": "Europa",
+    "americas": "Américas",
+    "asia": "Ásia",
+    "oceania": "Oceania",
+    "middle-east": "Oriente Médio",
+    "africa": "África",
+    "other": "Outros"
+};
+const regionPt = r => REGION_LABELS[r] || r;
+
+function valuationLabel(diff) {
+    if (diff >= 20) return "Muito sobrevalorizada";
+    if (diff >= 5) return "Sobrevalorizada";
+    if (diff > -5) return "Próxima da paridade";
+    if (diff > -30) return "Subvalorizada";
+    return "Muito subvalorizada";
+}
+
+function valuationBadge(diff) {
+    const cls = diff >= 5 ? "badge-over" : diff > -5 ? "badge-neutral" : "badge-under";
+    return `<span class="badge ${cls}">${valuationLabel(diff)}</span>`;
+}
+
+function downloadCSV(filename, header, rows) {
+    const q = v => {
+        const s = String(v ?? "");
+        return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [header, ...rows].map(r => r.map(q).join(",")).join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* Tabela ordenável: columns = [{key, label, num, render}] */
+function renderTable(container, columns, rows, state) {
+    const sorted = [...rows];
+    if (state.key) {
+        const col = columns.find(c => c.key === state.key);
+        sorted.sort((a, b) => {
+            const va = a[state.key], vb = b[state.key];
+            const r = col && col.num ? va - vb : String(va).localeCompare(String(vb), "pt-BR");
+            return state.asc ? r : -r;
+        });
+    }
+    const head = columns.map(c => {
+        const arrow = state.key === c.key ? `<span class="arrow">${state.asc ? " ▲" : " ▼"}</span>` : "";
+        return `<th class="${c.num ? "num" : ""}" data-key="${c.key}">${esc(c.label)}${arrow}</th>`;
+    }).join("");
+    const body = sorted.map(r => "<tr>" + columns.map(c => {
+        const v = c.render ? c.render(r) : esc(r[c.key]);
+        return `<td class="${c.num ? "num" : ""}">${v}</td>`;
+    }).join("") + "</tr>").join("");
+    container.innerHTML = `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+    container.querySelectorAll("th").forEach(th => th.addEventListener("click", () => {
+        const k = th.dataset.key;
+        if (state.key === k) state.asc = !state.asc;
+        else { state.key = k; state.asc = true; }
+        renderTable(container, columns, rows, state);
+    }));
+}
+
+/* ======================================================================
+   Plotly: tema escuro comum
+   ====================================================================== */
+const PLOT_CONFIG = { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["lasso2d", "select2d"] };
+
+function baseLayout(extra = {}) {
+    return Object.assign({
+        paper_bgcolor: "rgba(0,0,0,0)",
+        plot_bgcolor: "rgba(0,0,0,0)",
+        font: { color: "#f5f5f5", family: "Source Sans Pro, Segoe UI, Roboto, Arial, sans-serif" },
+        margin: { l: 10, r: 10, t: 30, b: 10 },
+        hoverlabel: { bgcolor: "#26272b", bordercolor: "#FFC72C", font: { color: "#f5f5f5" } },
+        legend: { orientation: "h", yanchor: "bottom", y: 1.02, x: 0 },
+        xaxis: { gridcolor: "#2e2f34", zerolinecolor: "#3a3b40", automargin: true },
+        yaxis: { gridcolor: "#2e2f34", zerolinecolor: "#3a3b40", automargin: true }
+    }, extra);
+}
+
+const isMobile = () => window.matchMedia("(max-width: 640px)").matches;
+
+function geoLayout() {
+    return baseLayout({
+        margin: { l: 0, r: 0, t: 10, b: 0 },
+        height: isMobile() ? 320 : 520,
+        geo: {
+            showframe: false,
+            showcoastlines: true,
+            coastlinecolor: "#444",
+            showcountries: true,
+            countrycolor: "#2c2c2c",
+            showland: true,
+            landcolor: "#2a2a2a",
+            projection: { type: "natural earth" },
+            bgcolor: "rgba(0,0,0,0)"
+        }
+    });
+}
+
+function priceChoropleth(el, rows) {
+    Plotly.react(el, [{
+        type: "choropleth",
+        locationmode: "ISO-3",
+        locations: rows.map(r => r.code),
+        z: rows.map(r => r.price_usd),
+        text: rows.map(r => r.name),
+        customdata: rows.map(r => [r.flag, r.diff_percent]),
+        colorscale: "YlOrRd",
+        marker: { line: { color: "#1a1a1a", width: 0.5 } },
+        colorbar: { title: { text: "US$" }, thickness: 14, len: 0.8 },
+        hovertemplate: "<b>%{customdata[0]} %{text}</b><br>Preço: US$ %{z:.2f}<br>vs. Base: %{customdata[1]:+.1f}%<extra></extra>"
+    }], geoLayout(), PLOT_CONFIG);
+}
+
+function diffChoropleth(el, rows) {
+    const maxAbs = Math.max(...rows.map(r => Math.abs(r.diff_percent)), 1);
+    Plotly.react(el, [{
+        type: "choropleth",
+        locationmode: "ISO-3",
+        locations: rows.map(r => r.code),
+        z: rows.map(r => r.diff_percent),
+        text: rows.map(r => r.name),
+        customdata: rows.map(r => [r.flag]),
+        colorscale: "RdYlGn",
+        reversescale: true,
+        zmin: -maxAbs,
+        zmax: maxAbs,
+        marker: { line: { color: "#1a1a1a", width: 0.5 } },
+        colorbar: { title: { text: "% vs base" }, thickness: 14, len: 0.8 },
+        hovertemplate: "<b>%{customdata[0]} %{text}</b><br>Diferença: %{z:+.1f}%<extra></extra>"
+    }], geoLayout(), PLOT_CONFIG);
+}
+
+/* ======================================================================
+   Dados
+   ====================================================================== */
+let META = null;
+let COUNTRIES = [];
+let HIST = [];
+
+async function loadData() {
+    const [cRes, hRes] = await Promise.all([
+        fetch("data/fallback_countries.json"),
+        fetch("data/fallback_historical_prices.csv")
+    ]);
+    if (!cRes.ok || !hRes.ok) throw new Error("Falha ao carregar os dados.");
+    const raw = await cRes.json();
+    META = raw.meta;
+    COUNTRIES = raw.countries.map(c => ({
+        rank: c.rank,
+        code: c.code,
+        name: c.name,
+        flag: c.flag,
+        region: c.region,
+        currency_code: c.currency.code,
+        currency_symbol: c.currency.symbol,
+        local_price: c.local_price,
+        dollar_ex: c.dollar_ex,
+        price_usd: c.price_usd,
+        diff_percent: c.diff_percent
+    })).sort((a, b) => a.rank - b.rank);
+
+    const csv = (await hRes.text()).trim().split(/\r?\n/);
+    const header = csv.shift().split(",");
+    HIST = csv.map(line => {
+        const v = line.split(",");
+        const o = Object.fromEntries(header.map((h, i) => [h, v[i]]));
+        o.year = Number(o.year);
+        o.price_usd = Number(o.price_usd);
+        return o;
+    });
+}
+
+/* ======================================================================
+   Navegação por hash
+   ====================================================================== */
+const PAGES = ["home", "mapa", "rankings", "tendencias", "calculadora"];
+const rendered = {};
+const renderers = {};
+
+function showPage() {
+    let page = location.hash.replace("#", "");
+    if (!PAGES.includes(page)) page = "home";
+    PAGES.forEach(p => { $("page-" + p).hidden = p !== page; });
+    document.querySelectorAll("#nav a").forEach(a => a.classList.toggle("active", a.dataset.page === page));
+    if (!rendered[page]) {
+        renderers[page]();
+        rendered[page] = true;
+    } else {
+        // Plotly precisa recalcular o tamanho de gráficos que estavam ocultos
+        $("page-" + page).querySelectorAll(".js-plotly-plot").forEach(el => Plotly.Plots.resize(el));
+    }
+    window.scrollTo(0, 0);
+}
+
+/* ======================================================================
+   Página: Início
+   ====================================================================== */
+renderers.home = function () {
+    const prices = COUNTRIES.map(c => c.price_usd);
+    const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+    const most = COUNTRIES.reduce((a, b) => (b.price_usd > a.price_usd ? b : a));
+    const cheap = COUNTRIES.reduce((a, b) => (b.price_usd < a.price_usd ? b : a));
+    const over = COUNTRIES.filter(c => c.diff_percent > 0).length;
+    const under = COUNTRIES.filter(c => c.diff_percent < 0).length;
+
+    $("hero-text").innerHTML =
+        `Paridade do poder de compra (PPP) e valorização cambial em ${COUNTRIES.length} países, ` +
+        `com base nos dados do <b>The Economist Big Mac Index</b>. Data de referência dos dados: ${esc(META.data_date)}.`;
+
+    const card = (label, value, delta, help) =>
+        `<div class="kpi-card"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div>` +
+        (delta ? `<div class="kpi-delta">${delta}</div>` : "") +
+        (help ? `<div class="kpi-help">${help}</div>` : "") + `</div>`;
+
+    $("kpis").innerHTML = [
+        card("Países cobertos", COUNTRIES.length, null, "Fonte: The Economist Big Mac Index"),
+        card("Preço médio global", `US$ ${fmt(avg)}`),
+        card("Mais caro", `${most.flag} ${esc(most.name)}`, `US$ ${fmt(most.price_usd)}`),
+        card("Mais barato", `${cheap.flag} ${esc(cheap.name)}`, `US$ ${fmt(cheap.price_usd)}`),
+        card("Diferença de poder de compra", `${fmt(most.price_usd / cheap.price_usd, 1)}x`, null, "Mais caro ÷ mais barato")
+    ].join("");
+
+    $("metrics").innerHTML =
+        `<div class="kpi-card metric"><div class="kpi-label">Moedas sobrevalorizadas (vs. USD)</div><div class="kpi-value">${over}</div></div>` +
+        `<div class="kpi-card metric"><div class="kpi-label">Moedas subvalorizadas (vs. USD)</div><div class="kpi-value">${under}</div></div>`;
+
+    const captions = {
+        price: "Passe o mouse sobre um país para ver o preço do Big Mac em dólares.",
+        diff: "Verde = moeda subvalorizada (Big Mac mais barato que nos EUA). Vermelho = moeda sobrevalorizada (Big Mac mais caro que nos EUA)."
+    };
+    const draw = mode => {
+        (mode === "price" ? priceChoropleth : diffChoropleth)($("home-map"), COUNTRIES);
+        $("home-map-caption").textContent = captions[mode];
+    };
+    $("home-map-tabs").addEventListener("click", e => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        $("home-map-tabs").querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
+        draw(b.dataset.mode);
+    });
+    draw("price");
+};
+
+/* ======================================================================
+   Página: Mapa Mundial
+   ====================================================================== */
+renderers.mapa = function () {
+    const regions = Object.keys(REGION_LABELS).filter(r => COUNTRIES.some(c => c.region === r))
+        .sort((a, b) => regionPt(a).localeCompare(regionPt(b), "pt-BR"));
+    const selected = new Set(regions);
+    let mode = "price";
+    const tableState = { key: "rank", asc: true };
+
+    const pmin = Math.floor(Math.min(...COUNTRIES.map(c => c.price_usd)) * 100) / 100;
+    const pmax = Math.ceil(Math.max(...COUNTRIES.map(c => c.price_usd)) * 100) / 100;
+    [$("map-min"), $("map-max")].forEach(el => { el.min = pmin; el.max = pmax; });
+    $("map-min").value = pmin;
+    $("map-max").value = pmax;
+
+    const chips = () => {
+        $("map-regions").innerHTML = regions.map(r =>
+            `<button class="chip" data-r="${r}" aria-pressed="${selected.has(r)}">${esc(regionPt(r))}</button>`
+        ).join("");
+    };
+
+    const columns = [
+        { key: "rank", label: "#", num: true },
+        { key: "name", label: "País", render: r => `${r.flag} ${esc(r.name)}` },
+        { key: "region_pt", label: "Região" },
+        { key: "currency_code", label: "Moeda" },
+        { key: "local_price", label: "Preço local", num: true, render: r => fmt(r.local_price) },
+        { key: "price_usd", label: "Preço (US$)", num: true, render: r => fmt(r.price_usd) },
+        { key: "diff_percent", label: "Diferença (%)", num: true,
+          render: r => `<span class="${r.diff_percent >= 0 ? "pos" : "neg"}">${signed(r.diff_percent)}%</span>` },
+        { key: "valuation", label: "Classificação", render: r => valuationBadge(r.diff_percent) }
+    ];
+
+    const update = () => {
+        let lo = Number($("map-min").value), hi = Number($("map-max").value);
+        if (lo > hi) [lo, hi] = [hi, lo];
+        $("map-range-label").textContent = `US$ ${fmt(lo)} – US$ ${fmt(hi)}`;
+
+        const rows = COUNTRIES.filter(c => selected.has(c.region) && c.price_usd >= lo - 1e-9 && c.price_usd <= hi + 1e-9)
+            .map(c => Object.assign({}, c, { region_pt: regionPt(c.region), valuation: valuationLabel(c.diff_percent) }));
+
+        $("map-count").innerHTML = `<b>${rows.length}</b> países exibidos de <b>${COUNTRIES.length}</b> no total.`;
+        if (!rows.length) {
+            Plotly.purge($("map-chart"));
+            $("map-chart").innerHTML = `<div class="notice">Nenhum país corresponde aos filtros selecionados.</div>`;
+            $("map-table").innerHTML = "";
+            return;
+        }
+        if (!$("map-chart").classList.contains("js-plotly-plot")) $("map-chart").innerHTML = "";
+        (mode === "price" ? priceChoropleth : diffChoropleth)($("map-chart"), rows);
+        renderTable($("map-table"), columns, rows, tableState);
+    };
+
+    $("map-regions").addEventListener("click", e => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        const r = b.dataset.r;
+        selected.has(r) ? selected.delete(r) : selected.add(r);
+        chips();
+        update();
+    });
+    $("map-min").addEventListener("input", update);
+    $("map-max").addEventListener("input", update);
+    $("map-mode").addEventListener("click", e => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        mode = b.dataset.mode;
+        $("map-mode").querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
+        update();
+    });
+
+    chips();
+    update();
+};
+
+/* ======================================================================
+   Página: Rankings
+   ====================================================================== */
+renderers.rankings = function () {
+    let baseCode = "USA";
+    let regionTab = "all";
+    let data = [];
+    const tableState = { key: "rank", asc: true };
+
+    const sortedByName = [...COUNTRIES].sort((a, b) => a.name.localeCompare(b.name, "en"));
+    $("base-select").innerHTML = sortedByName.map(c =>
+        `<option value="${c.code}" ${c.code === baseCode ? "selected" : ""}>${c.flag} ${esc(c.name)}</option>`
+    ).join("");
+
+    const regions = Object.keys(REGION_LABELS).filter(r => COUNTRIES.some(c => c.region === r))
+        .sort((a, b) => regionPt(a).localeCompare(regionPt(b), "pt-BR"));
+    $("rank-tabs").innerHTML = [`<button class="tab active" data-r="all">Todos</button>`]
+        .concat(regions.map(r => `<button class="tab" data-r="${r}">${esc(regionPt(r))}</button>`)).join("");
+
+    const recompute = () => {
+        const base = COUNTRIES.find(c => c.code === baseCode);
+        data = COUNTRIES.map(c => Object.assign({}, c, {
+            price_base: c.price_usd / base.price_usd,
+            diff_base: ((c.price_usd - base.price_usd) / base.price_usd) * 100,
+            region_pt: regionPt(c.region)
+        }));
+        data.forEach(d => { d.valuation = valuationLabel(d.diff_base); });
+        $("base-caption").innerHTML =
+            `Todos os valores abaixo estão recalculados usando <b>${base.flag} ${esc(base.name)}</b> como referência (0%).`;
+        return base;
+    };
+
+    const rankingChart = () => {
+        const sub = (regionTab === "all" ? data : data.filter(d => d.region === regionTab))
+            .slice().sort((a, b) => a.price_usd - b.price_usd);
+        const groups = [
+            { name: "Mais caro que a base", color: "#e74c3c", test: d => d.diff_base >= 0 },
+            { name: "Mais barato que a base", color: "#2ecc71", test: d => d.diff_base < 0 }
+        ];
+        const order = sub.map(d => d.name);
+        const traces = groups.map(g => {
+            const rows = sub.filter(g.test);
+            return {
+                type: "bar", orientation: "h", name: g.name,
+                x: rows.map(d => d.price_usd), y: rows.map(d => d.name),
+                customdata: rows.map(d => [d.flag, d.diff_base]),
+                marker: { color: g.color },
+                hovertemplate: "<b>%{customdata[0]} %{y}</b><br>Preço: US$ %{x:.2f}<br>vs. base: %{customdata[1]:+.1f}%<extra></extra>"
+            };
+        }).filter(t => t.x.length);
+        Plotly.react($("rank-chart"), traces, baseLayout({
+            height: Math.max(420, 20 * sub.length + 80),
+            barmode: "overlay",
+            xaxis: { title: { text: "Preço (US$)" }, gridcolor: "#2e2f34", automargin: true },
+            yaxis: { categoryorder: "array", categoryarray: order, automargin: true, tickfont: { size: 11 } }
+        }), PLOT_CONFIG);
+    };
+
+    const extremesChart = () => {
+        const n = Number($("n-slider").value);
+        $("n-label").textContent = n;
+        const byPrice = data.slice().sort((a, b) => a.price_usd - b.price_usd);
+        const cheapest = byPrice.slice(0, n);
+        const priciest = byPrice.slice(-n);
+        const all = [...cheapest, ...priciest.filter(p => !cheapest.includes(p))];
+        const order = all.slice().sort((a, b) => a.price_usd - b.price_usd).map(d => d.name);
+        const mk = (rows, name, color) => ({
+            type: "bar", orientation: "h", name,
+            x: rows.map(d => d.price_usd), y: rows.map(d => d.name),
+            customdata: rows.map(d => d.flag),
+            marker: { color },
+            hovertemplate: "<b>%{customdata} %{y}</b><br>US$ %{x:.2f}<extra></extra>"
+        });
+        Plotly.react($("extremes-chart"), [
+            mk(cheapest, "Mais baratos", "#2ecc71"),
+            mk(priciest, "Mais caros", "#e74c3c")
+        ], baseLayout({
+            height: Math.max(420, 24 * all.length + 80),
+            barmode: "overlay",
+            xaxis: { title: { text: "Preço (US$)" }, gridcolor: "#2e2f34", automargin: true },
+            yaxis: { categoryorder: "array", categoryarray: order, automargin: true }
+        }), PLOT_CONFIG);
+    };
+
+    const boxChart = () => {
+        const palette = ["#FFC72C", "#e74c3c", "#3498db", "#2ecc71", "#9b59b6", "#e67e22", "#1abc9c"];
+        const traces = regions.map((r, i) => {
+            const rows = data.filter(d => d.region === r);
+            return {
+                type: "box", name: regionPt(r),
+                y: rows.map(d => d.price_usd),
+                text: rows.map(d => `${d.flag} ${d.name}`),
+                boxpoints: "all", jitter: 0.4, pointpos: 0,
+                marker: { color: palette[i % palette.length], size: 6 },
+                hovertemplate: "%{text}<br>US$ %{y:.2f}<extra></extra>"
+            };
+        });
+        Plotly.react($("box-chart"), traces, baseLayout({
+            height: 460, showlegend: false,
+            yaxis: { title: { text: "Preço (US$)" }, gridcolor: "#2e2f34", automargin: true }
+        }), PLOT_CONFIG);
+    };
+
+    const table = base => {
+        const priceLabel = `Preço (em ${base.name})`;
+        const columns = [
+            { key: "rank", label: "#", num: true },
+            { key: "name", label: "País", render: r => `${r.flag} ${esc(r.name)}` },
+            { key: "region_pt", label: "Região" },
+            { key: "currency_code", label: "Moeda" },
+            { key: "local_price", label: "Preço local", num: true, render: r => fmt(r.local_price) },
+            { key: "price_base", label: priceLabel, num: true, render: r => fmt(r.price_base, 3) },
+            { key: "diff_base", label: "Diferença (%)", num: true,
+              render: r => `<span class="${r.diff_base >= 0 ? "pos" : "neg"}">${signed(r.diff_base)}%</span>` },
+            { key: "valuation", label: "Classificação", render: r => valuationBadge(r.diff_base) }
+        ];
+        renderTable($("rank-table"), columns, data, tableState);
+        $("rank-csv").onclick = () => downloadCSV("big_mac_index_ranking.csv",
+            ["#", "País", "Região", "Moeda", "Preço local", priceLabel, "Diferença (%)", "Classificação"],
+            data.slice().sort((a, b) => a.rank - b.rank).map(r => [
+                r.rank, r.name, r.region_pt, r.currency_code, r.local_price,
+                r.price_base.toFixed(4), r.diff_base.toFixed(2), r.valuation
+            ]));
+    };
+
+    const all = () => {
+        const base = recompute();
+        rankingChart();
+        extremesChart();
+        boxChart();
+        table(base);
+    };
+
+    $("base-select").addEventListener("change", e => { baseCode = e.target.value; all(); });
+    $("rank-tabs").addEventListener("click", e => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        regionTab = b.dataset.r;
+        $("rank-tabs").querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
+        rankingChart();
+    });
+    $("n-slider").addEventListener("input", extremesChart);
+
+    all();
+};
+
+/* ======================================================================
+   Página: Tendências
+   ====================================================================== */
+renderers.tendencias = function () {
+    const names = [...new Set(HIST.map(h => h.name))].sort((a, b) => a.localeCompare(b, "en"));
+    const flagByName = Object.fromEntries(COUNTRIES.map(c => [c.name, c.flag]));
+    const selected = new Set(["United States", "Switzerland", "Japan", "Brazil"].filter(n => names.includes(n)));
+    if (!selected.size) names.slice(0, 4).forEach(n => selected.add(n));
+
+    const chips = () => {
+        $("hist-countries").innerHTML = names.map(n =>
+            `<button class="chip" data-n="${esc(n)}" aria-pressed="${selected.has(n)}">${flagByName[n] || ""} ${esc(n)}</button>`
+        ).join("");
+    };
+
+    const update = () => {
+        const chosen = names.filter(n => selected.has(n));
+        if (!chosen.length) {
+            Plotly.purge($("hist-chart"));
+            $("hist-chart").innerHTML = `<div class="notice">Selecione ao menos um país para visualizar o gráfico.</div>`;
+            $("hist-table").innerHTML = "";
+            $("hist-csv").disabled = true;
+            return;
+        }
+        $("hist-csv").disabled = false;
+        if (!$("hist-chart").classList.contains("js-plotly-plot")) $("hist-chart").innerHTML = "";
+
+        const traces = chosen.map(n => {
+            const rows = HIST.filter(h => h.name === n).sort((a, b) => a.year - b.year);
+            return {
+                type: "scatter", mode: "lines+markers", name: n,
+                x: rows.map(r => r.year), y: rows.map(r => r.price_usd),
+                hovertemplate: `<b>${esc(n)}</b><br>%{x}: US$ %{y:.2f}<extra></extra>`
+            };
+        });
+        Plotly.react($("hist-chart"), traces, baseLayout({
+            height: isMobile() ? 380 : 480,
+            xaxis: { title: { text: "Ano" }, dtick: 1, gridcolor: "#2e2f34", automargin: true },
+            yaxis: { title: { text: "Preço (US$)" }, gridcolor: "#2e2f34", automargin: true }
+        }), PLOT_CONFIG);
+
+        const years = [...new Set(HIST.filter(h => selected.has(h.name)).map(h => h.year))].sort((a, b) => a - b);
+        const lookup = {};
+        HIST.forEach(h => { lookup[h.year + "|" + h.name] = h.price_usd; });
+        const rows = years.map(y => {
+            const o = { year: y };
+            chosen.forEach(n => { o[n] = lookup[y + "|" + n] ?? null; });
+            return o;
+        });
+        const columns = [{ key: "year", label: "Ano", num: true }].concat(chosen.map(n => ({
+            key: n, label: n, num: true, render: r => (r[n] == null ? "—" : fmt(r[n]))
+        })));
+        renderTable($("hist-table"), columns, rows, { key: "year", asc: true });
+
+        $("hist-csv").onclick = () => downloadCSV("big_mac_index_historico.csv",
+            ["Ano", ...chosen], rows.map(r => [r.year, ...chosen.map(n => r[n] ?? "")]));
+    };
+
+    $("hist-countries").addEventListener("click", e => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        const n = b.dataset.n;
+        selected.has(n) ? selected.delete(n) : selected.add(n);
+        chips();
+        update();
+    });
+
+    chips();
+    update();
+};
+
+/* ======================================================================
+   Página: Calculadora PPP
+   ====================================================================== */
+renderers.calculadora = function () {
+    const opts = COUNTRIES.map(c => `<option value="${c.code}">${c.flag} ${esc(c.name)} (${esc(c.currency_code)})</option>`).join("");
+    $("calc-origin").innerHTML = opts;
+    $("calc-dest").innerHTML = opts;
+    $("calc-origin").value = "USA";
+    $("calc-dest").value = COUNTRIES.some(c => c.code === "JPN") ? "JPN" : COUNTRIES[0].code;
+
+    const money = (sym, v) => `${esc(sym)} ${fmt(v)}`;
+
+    const update = () => {
+        const o = COUNTRIES.find(c => c.code === $("calc-origin").value);
+        const d = COUNTRIES.find(c => c.code === $("calc-dest").value);
+        const amount = Math.max(0, Number($("calc-amount").value) || 0);
+        $("calc-amount-label").textContent = `Valor a converter (em ${o.currency_code}, moeda de ${o.name})`;
+
+        const implied = d.local_price / o.local_price;
+        const market = d.dollar_ex / o.dollar_ex;
+        const ppp = amount * implied;
+        const mkt = amount * market;
+
+        $("calc-results").innerHTML =
+            `<div class="kpi-card metric"><div class="kpi-label">Conversão pela PPP do Big Mac (${esc(d.currency_code)})</div>` +
+            `<div class="kpi-value">${money(d.currency_symbol, ppp)}</div>` +
+            `<div class="kpi-help">Quanto o valor "deveria" equivaler, se as moedas estivessem em paridade de poder de compra. ` +
+            `Taxa implícita: 1 ${esc(o.currency_code)} = ${fmt(implied, 4)} ${esc(d.currency_code)}.</div></div>` +
+            `<div class="kpi-card metric"><div class="kpi-label">Conversão pela taxa de câmbio de mercado (${esc(d.currency_code)})</div>` +
+            `<div class="kpi-value">${money(d.currency_symbol, mkt)}</div>` +
+            `<div class="kpi-help">Quanto o valor equivale usando a taxa de câmbio efetiva do dataset. ` +
+            `Taxa de mercado: 1 ${esc(o.currency_code)} = ${fmt(market, 4)} ${esc(d.currency_code)}.</div></div>`;
+
+        if (o.code === d.code) {
+            $("calc-info").innerHTML = "Escolha países diferentes para comparar as moedas.";
+            return;
+        }
+        const gap = implied ? ((market - implied) / implied) * 100 : 0;
+        $("calc-info").innerHTML =
+            `A taxa de câmbio de mercado está <b>${fmt(Math.abs(gap), 1)}% ${gap > 0 ? "acima" : "abaixo"}</b> ` +
+            `da taxa implícita pela paridade do Big Mac. Isso sugere que a moeda de <b>${d.flag} ${esc(d.name)}</b> está ` +
+            `<b>${gap > 0 ? "subvalorizada" : "sobrevalorizada"}</b> frente à de <b>${o.flag} ${esc(o.name)}</b>, segundo esta metodologia.`;
+    };
+
+    $("calc-origin").addEventListener("change", update);
+    $("calc-dest").addEventListener("change", update);
+    $("calc-amount").addEventListener("input", update);
+    $("calc-swap").addEventListener("click", () => {
+        const o = $("calc-origin").value;
+        $("calc-origin").value = $("calc-dest").value;
+        $("calc-dest").value = o;
+        update();
+    });
+
+    update();
+};
+
+/* ======================================================================
+   Inicialização
+   ====================================================================== */
+(async function init() {
+    try {
+        if (typeof Plotly === "undefined") throw new Error("Não foi possível carregar a biblioteca de gráficos.");
+        await loadData();
+    } catch (err) {
+        $("loading").textContent = "Erro ao carregar o dashboard: " + err.message;
+        return;
+    }
+    $("loading").remove();
+    window.addEventListener("hashchange", showPage);
+    showPage();
+})();
+</script>
+</body>
+</html>
